@@ -50,7 +50,7 @@ public class CipherChatApp {
     }
 
     private static boolean askFinish(){
-        System.out.println("Please enter \'q\' to finish.");
+        System.out.println("Please enter \'q\' to finish.\n");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String line = null;
         while((line != null && !line.equals("q")) || line == null) {
