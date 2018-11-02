@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 public class CipherChatApp {
 
-    public static void main(String[] args){
+/*    public static void main(String[] args){
         String dbUrl = CipherChatApp.askDbUrl();
         int port = askPort();
 
@@ -15,7 +15,7 @@ public class CipherChatApp {
         userContext.removeAllUsers();
         ServerLogic serverLogic = new ServerLogic(userContext, port);
         serverLogic.start();
-    }
+    }*/
 
     private static String askDbUrl(){
         System.out.println("Please enter url to sqlite database.");

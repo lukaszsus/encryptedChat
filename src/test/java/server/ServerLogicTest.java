@@ -20,7 +20,7 @@ class ServerLogicTest {
     static void setUp() {
         UserContext userContext = new UserContext("chat.db");
         userContext.removeAllUsers();
-        serverLogic = new ServerLogic(userContext);
+        serverLogic = new ServerLogic(userContext, ServerLogic.SERVER_PORT);
         serverLogic.start();
         try {
             Thread.sleep(1000);
@@ -28,8 +28,8 @@ class ServerLogicTest {
             e.printStackTrace();
         }
 
-        cs1 = new ClientSocket(15000);
-        cs2 = new ClientSocket(15000);
+        cs1 = new ClientSocket(ServerLogic.SERVER_PORT);
+        cs2 = new ClientSocket(ServerLogic.SERVER_PORT);
     }
 
     @ParameterizedTest

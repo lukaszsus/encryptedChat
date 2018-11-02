@@ -9,6 +9,7 @@ import netscape.javascript.JSObject;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.*;
@@ -16,6 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ServerLogic {
+
+    public static final int SERVER_PORT = 15001;
 
     private UserContext userContext;
     private ServerThread serverThread;
@@ -26,13 +29,13 @@ public class ServerLogic {
     private int portNumber;
 
     public ServerLogic(UserContext userContext, int portNumber){
+        this.portNumber = portNumber;
+
         this.userContext = userContext;
         clientThreads = new ArrayList<>();
         serverThread = new ServerThread(this);
         clientSockets = new HashMap<>();
         messagesForClient = new HashMap<>();
-
-        this.portNumber = portNumber;
     }
 
     public void start(){
@@ -90,6 +93,7 @@ public class ServerLogic {
         if(isSocketAuthorized(socket, message.getP1())){
             if(isUserLoggedIn(message.getP2())){
                 stackMessage(message);
+                //sendMessage(message);
                 return new JsonMessage(MessageType.TEXT, new String("true"), new String("Succeeded."));
             }
             else{
@@ -106,12 +110,23 @@ public class ServerLogic {
         }
         return false;
     }
+
     private JsonMessage socketUnathorized(){
         return new JsonMessage(MessageType.TEXT, new String("false"), new String("You are not correctly logged in."));
     }
 
     private boolean isUserLoggedIn(String login){
         return clientSockets.containsKey(login);
+    }
+
+    private void sendMessage(JsonMessage message){
+        String recipient = message.getP2();
+        Socket socket = clientSockets.get(recipient);
+        try (ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream())) {
+            output.writeObject(message.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void stackMessage(JsonMessage message){
@@ -125,10 +140,16 @@ public class ServerLogic {
         }
     }
 
+    public List<JsonMessage> getMessagesForClient(String login){
+        return this.messagesForClient.get(login);
+    }
+
     public JsonMessage loadResponse(Socket socket, String login){
         if(isSocketAuthorized(socket, login)) {
             if (messagesForClient.containsKey(login)) {
-                return JsonMessageFactory.createLoadMsg(MessageType.LOAD, this.messagesForClient.get(login));
+                JsonMessage retMsg =  JsonMessageFactory.createLoadMsg(MessageType.LOAD, this.messagesForClient.get(login));
+                messagesForClient.remove(login);
+                return retMsg;
             } else {
                 return new JsonMessage(MessageType.LOAD, new String("[]"));
             }

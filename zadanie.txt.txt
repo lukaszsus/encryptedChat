@@ -23,7 +23,7 @@ REG	login	pass	pass
 LOGIN	login	pass
 TEXT	login	recip	content
 LIST	login	true/false
-FIND	login	fraza	true/false
+FIND	login	fraza	true/false	
 LOGOUT	login
 LOAD	login
 
@@ -31,8 +31,8 @@ S-K
 P0	P1	P2	P3
 REG	t/f	content
 LOGIN	t/f	content
-LIST	List<User>
-FIND	List<User>
+LIST	List<String>
+FIND	List<String>
 LOGOUT	t/f
 LOAD	List<>
 

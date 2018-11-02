@@ -33,7 +33,6 @@ public class ClientThread extends Thread {
     public void run() {
         work = true;
         try {
-            output = new ObjectOutputStream(socket.getOutputStream());
             input = new ObjectInputStream(socket.getInputStream());
 
             while (work) {
@@ -42,7 +41,10 @@ public class ClientThread extends Thread {
                 JsonMessage jsonMessage = new JsonMessage(message);
                 jsonMessage = jsonMessage.doAction(serverLogic, socket);
                 System.out.println(jsonMessage.toString());
+
+                output = new ObjectOutputStream(socket.getOutputStream());
                 output.writeObject(jsonMessage.toString());
+                output.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -66,4 +68,3 @@ public class ClientThread extends Thread {
         }
     }
 }
-
