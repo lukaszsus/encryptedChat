@@ -247,6 +247,14 @@ public class ServerLogic {
         clientSockets.remove(login);
     }
 
+    public void close(){
+        for(ClientThread ct : clientThreads){
+            ct.setWork(false);
+        }
+        connRefresher.setWork(false);
+        serverThread.setWork(false);
+    }
+
     protected void finalize(){
         serverThread.setWork(false);
         for(ClientThread ct : clientThreads){
