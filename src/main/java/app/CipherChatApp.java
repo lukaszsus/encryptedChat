@@ -8,13 +8,13 @@ import java.util.Scanner;
 public class CipherChatApp {
 
     public static void main(String[] args){
-        String dbUrl = CipherChatApp.askDbUrl();
+/*        String dbUrl = CipherChatApp.askDbUrl();
         int port = askPort();
 
         UserContext userContext = new UserContext(dbUrl);
         userContext.removeAllUsers();
         ServerLogic serverLogic = new ServerLogic(userContext, port);
-        serverLogic.start();
+        serverLogic.start();*/
     }
 
     private static String askDbUrl(){

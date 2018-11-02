@@ -19,16 +19,17 @@ public class ServerLogic {
 
     private UserContext userContext;
     private ServerThread serverThread;
+    private ConnectionRefresher connRefresher;
     private List<ClientThread> clientThreads;
     private Map<String, Socket> clientSockets;
     private Map<String, List<JsonMessage>> messagesForClient;
-
     private int portNumber;
 
     public ServerLogic(UserContext userContext, int portNumber){
         this.userContext = userContext;
         clientThreads = new ArrayList<>();
         serverThread = new ServerThread(this);
+        connRefresher = new ConnectionRefresher(this);
         clientSockets = new HashMap<>();
         messagesForClient = new HashMap<>();
 
@@ -37,6 +38,7 @@ public class ServerLogic {
 
     public void start(){
         serverThread.start();
+        connRefresher.start();
     }
 
     public List<ClientThread> getClientThreads() {
@@ -89,7 +91,8 @@ public class ServerLogic {
     public JsonMessage textResponse(Socket socket, JsonMessage message){
         if(isSocketAuthorized(socket, message.getP1())){
             if(isUserLoggedIn(message.getP2())){
-                stackMessage(message);
+                //stackMessage(message);
+                sendMessage(message);
                 return new JsonMessage(MessageType.TEXT, new String("true"), new String("Succeeded."));
             }
             else{
@@ -114,6 +117,31 @@ public class ServerLogic {
         return clientSockets.containsKey(login);
     }
 
+    public boolean sendMessage(JsonMessage message){
+        String recipient = message.getP2();
+        Socket socket = clientSockets.get(recipient);
+        ObjectOutputStream outputStream = findOutput(socket);
+        if(outputStream != null) {
+            try {
+                outputStream.writeObject(message.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    private ObjectOutputStream findOutput(Socket socket){
+        for(ClientThread ct : clientThreads){
+            if(ct.getSocket().equals(socket)){
+                return ct.getOutput();
+            }
+        }
+        return null;
+    }
+
     private void stackMessage(JsonMessage message){
         String recipient = message.getP2();
         if(messagesForClient.containsKey(recipient)){
@@ -125,7 +153,7 @@ public class ServerLogic {
         }
     }
 
-    public JsonMessage loadResponse(Socket socket, String login){
+/*    public JsonMessage loadResponse(Socket socket, String login){
         if(isSocketAuthorized(socket, login)) {
             if (messagesForClient.containsKey(login)) {
                 return JsonMessageFactory.createLoadMsg(MessageType.LOAD, this.messagesForClient.get(login));
@@ -135,7 +163,7 @@ public class ServerLogic {
         }else{
             return socketUnathorized();
         }
-    }
+    }*/
 
     public JsonMessage listResponse(Socket socket, String login, boolean active){
         if(isSocketAuthorized(socket, login)) {
@@ -182,6 +210,15 @@ public class ServerLogic {
         }
     }
 
+    public JsonMessage pongResponse(Socket socket, String login){
+        if(isSocketAuthorized(socket, login)){
+            connRefresher.refreshActiveValue(login);
+            return new JsonMessage(MessageType.PONG, new String("true"));
+        } else{
+            return socketUnathorized();
+        }
+    }
+
     public void finishConnection(Socket socket) {
         List<String> keys = new ArrayList<>();
         for (Map.Entry<String, Socket> entry : clientSockets.entrySet()) {
@@ -194,6 +231,20 @@ public class ServerLogic {
                 clientSockets.remove(key);
             }
         }
+    }
+
+    public void remove(String login){
+        Socket socket = clientSockets.get(login);
+        List<ClientThread> toRemove = new ArrayList<>();
+        for(ClientThread ct : clientThreads){
+            if(ct.getSocket().equals(socket)) {
+                toRemove.add(ct);
+            }
+        }
+        for(ClientThread ct : toRemove){
+            clientThreads.remove(ct);
+        }
+        clientSockets.remove(login);
     }
 
     protected void finalize(){

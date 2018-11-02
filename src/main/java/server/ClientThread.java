@@ -1,6 +1,7 @@
 package server;
 
 import jsonParser.JsonMessage;
+import jsonParser.MessageType;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,6 +20,30 @@ public class ClientThread extends Thread {
     public ClientThread(Socket socket, ServerLogic serverLogic) {
         this.socket = socket;
         this.serverLogic = serverLogic;
+    }
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
+    }
+
+    public ObjectOutputStream getOutput() {
+        return output;
+    }
+
+    public void setOutput(ObjectOutputStream output) {
+        this.output = output;
+    }
+
+    public ObjectInputStream getInput() {
+        return input;
+    }
+
+    public void setInput(ObjectInputStream input) {
+        this.input = input;
     }
 
     public boolean isWork() {
@@ -41,8 +66,10 @@ public class ClientThread extends Thread {
                 System.out.println(message);
                 JsonMessage jsonMessage = new JsonMessage(message);
                 jsonMessage = jsonMessage.doAction(serverLogic, socket);
-                System.out.println(jsonMessage.toString());
-                output.writeObject(jsonMessage.toString());
+                if(jsonMessage.getMsgType()!= MessageType.PONG) {
+                    System.out.println(jsonMessage.toString());
+                    output.writeObject(jsonMessage.toString());
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -53,15 +80,15 @@ public class ClientThread extends Thread {
         serverLogic.finishConnection(socket);
 
         try {
-            socket.close();
-        } catch (IOException e) {
-        }
-        try {
             output.close();
         } catch (IOException e) {
         }
         try {
             input.close();
+        } catch (IOException e) {
+        }
+        try {
+            socket.close();
         } catch (IOException e) {
         }
     }

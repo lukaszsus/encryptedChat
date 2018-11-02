@@ -14,7 +14,7 @@ class ServerThreadTest {
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
-        serverLogic = new ServerLogic(new UserContext());
+        serverLogic = new ServerLogic(new UserContext("chat.db"), 15000);
         serverThread = new ServerThread(serverLogic);
     }
 
