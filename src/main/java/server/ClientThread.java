@@ -50,20 +50,19 @@ public class ClientThread extends Thread {
             e.printStackTrace();
         }
 
+        serverLogic.finishConnection(socket);
+
         try {
             socket.close();
         } catch (IOException e) {
-
         }
         try {
             output.close();
         } catch (IOException e) {
-
         }
         try {
             input.close();
         } catch (IOException e) {
-
         }
     }
 }

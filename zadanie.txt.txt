@@ -1,4 +1,4 @@
-Klient:
+﻿Klient:
 1. Przynajmniej jeden serwer, przynajmniej 2 komunikatory.
 2. Ta sama metoda szyfrowania. W³asna implementacja algorytmu szyfrowania.
 Serwer:
@@ -22,10 +22,10 @@ P0	P1	P2	P3
 REG	login	pass	pass
 LOGIN	login	pass
 TEXT	login	recip	content
-LIST	login
-FIND	login	fraza
+LIST	login	true/false
+FIND	login	fraza	true/false
 LOGOUT	login
-PONG	login
+LOAD	login
 
 S-K
 P0	P1	P2	P3
@@ -34,7 +34,7 @@ LOGIN	t/f	content
 LIST	List<User>
 FIND	List<User>
 LOGOUT	t/f
-PING	login
+LOAD	List<>
 
 3. Szyfrowanie:
 1. Cezar kluczem (szyfr Viegenera)

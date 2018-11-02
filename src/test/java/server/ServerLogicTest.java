@@ -18,7 +18,7 @@ class ServerLogicTest {
 
     @org.junit.jupiter.api.BeforeAll
     static void setUp() {
-        UserContext userContext = new UserContext();
+        UserContext userContext = new UserContext("chat.db");
         userContext.removeAllUsers();
         serverLogic = new ServerLogic(userContext);
         serverLogic.start();
@@ -37,11 +37,6 @@ class ServerLogicTest {
     void testCommunication(String socketName, String inputMsg, String outputMsg) {
         ClientSocket cs = socketName.equals("cs1") ? cs1 : cs2;
         cs.sendMessage(inputMsg);
-//        try {
-//            Thread.sleep(1000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
         String str = cs.receiveMessage();
         System.out.println(str);
 
@@ -53,22 +48,24 @@ class ServerLogicTest {
 
     @ParameterizedTest
     @MethodSource("parametersForTestTextCommunication")
-    void testTextCommunication(String inputMsg, String outputMsg) {
-        cs1.sendMessage(inputMsg);
+    void testTextCommunication(String inputMsg1, String inputMsg2, String outputMsg1, String outputMsg2) {
+        cs1.sendMessage(inputMsg1);
         String str1 = cs1.receiveMessage();
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        cs2.sendMessage(inputMsg2);
         String str2 = cs2.receiveMessage();
 
-        outputMsg = outputMsg.replace(" ", "").replace("\n", "");
+        outputMsg1 = outputMsg1.replace(" ", "").replace("\n", "");
+        outputMsg2 = outputMsg2.replace(" ", "").replace("\n", "");
         str1 = str1.replace(" ", "").replace("\n", "");
         str2 = str2.replace(" ", "").replace("\n", "");
 
-        assertEquals(outputMsg, str1);
-        assertEquals(inputMsg, str2);
+        assertEquals(outputMsg1, str1);
+        assertEquals(outputMsg2, str2);
     }
 
     private static Stream<String[]> parametersForTestCommunication() {
@@ -161,7 +158,43 @@ class ServerLogicTest {
                         "   \"P0\":\"LOGIN\",\n" +
                         "   \"P1\":\"true\",\n" +
                         "   \"P2\":\"Login succeeded.\"\n" +
-                        "}")}
+                        "}")},
+
+        new String[]{"cs1",
+                new String("{  \n" +
+                        "   \"P0\":\"LIST\",\n" +
+                        "   \"P1\":\"user1\",\n" +
+                        "   \"P2\":\"true\",\n" +
+                        "   \"P3\":\"\"\n" +
+                        "}"),
+                new String("{  \n" +
+                        "   \"P0\":\"LIST\",\n" +
+                        "   \"P1\":\"[\\\"user1\\\", \\\"user2\\\"]\"\n" +
+                        "}")},
+
+        new String[]{"cs2",
+                new String("{  \n" +
+                        "   \"P0\":\"FIND\",\n" +
+                        "   \"P1\":\"user2\",\n" +
+                        "   \"P2\":\"us.*\",\n" +
+                        "   \"P3\":\"true\"\n" +
+                        "}"),
+                new String("{  \n" +
+                        "   \"P0\":\"FIND\",\n" +
+                        "   \"P1\":\"[\\\"user1\\\", \\\"user2\\\"]\"\n" +
+                        "}")},
+
+              new String[]{"cs2",
+                        new String("{  \n" +
+                                "   \"P0\":\"FIND\",\n" +
+                                "   \"P1\":\"user2\",\n" +
+                                "   \"P2\":\"user1\",\n" +
+                                "   \"P3\":\"true\"\n" +
+                                "}"),
+                        new String("{  \n" +
+                                "   \"P0\":\"FIND\",\n" +
+                                "   \"P1\":\"[\\\"user1\\\"]\"\n" +
+                                "}")}
         );
     }
 
@@ -173,22 +206,35 @@ class ServerLogicTest {
                 "   \"P3\":\"content1\"\n" +
                 "}"),
                 new String("{  \n" +
+                        "   \"P0\":\"LOAD\",\n" +
+                        "   \"P1\":\"user2\"\n" +
+                        "}"),
+                new String("{  \n" +
                         "   \"P0\":\"TEXT\",\n" +
                         "   \"P1\":\"true\",\n" +
                         "   \"P2\":\"Succeeded.\"\n" +
-                        "}")},
+                        "}"),
+                        new String("{  \n" +
+                                "   \"P0\":\"LOAD\",\n" +
+                                "   \"P1\":\"[{\\\"P0\\\":\\\"TEXT\\\",\\\"P1\\\":\\\"user1\\\",\\\"P2\\\":\\\"user2\\\",\\\"P3\\\":\\\"content1\\\"}]\"" +
+                                "}"),},
                 new String[]{
                         new String("{  \n" +
                                 "   \"P0\":\"TEXT\",\n" +
                                 "   \"P1\":\"user1\",\n" +
-                                "   \"P2\":\"user3\",\n" +
-                                "   \"P3\":\"content1\"\n" +
+                                "   \"P2\":\"user2\",\n" +
+                                "   \"P3\":\"content2\"\n" +
+                                "}"),
+                        new String("{  \n" +
+                                "   \"P0\":\"LOAD\",\n" +
+                                "   \"P1\":\"user3\"\n" +
                                 "}"),
                         new String("{  \n" +
                                 "   \"P0\":\"TEXT\",\n" +
-                                "   \"P1\":\"false\",\n" +
-                                "   \"P2\":\"Recipient is not logged..\"\n" +
-                                "}")}
+                                "   \"P1\":\"true\",\n" +
+                                "   \"P2\":\"Succeeded.\"\n" +
+                                "}"),
+                new String("{\"P0\":\"TEXT\",\"P1\":\"false\",\"P2\":\"You are not correctly logged in.\"}")}
                         );
     }
 }

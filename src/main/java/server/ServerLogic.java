@@ -1,16 +1,19 @@
 package server;
 
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
 import db.UserContext;
 import jsonParser.JsonMessage;
+import jsonParser.JsonMessageFactory;
 import jsonParser.MessageType;
+import netscape.javascript.JSObject;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ServerLogic {
 
@@ -18,12 +21,18 @@ public class ServerLogic {
     private ServerThread serverThread;
     private List<ClientThread> clientThreads;
     private Map<String, Socket> clientSockets;
+    private Map<String, List<JsonMessage>> messagesForClient;
 
-    public ServerLogic(UserContext userContext){
+    private int portNumber;
+
+    public ServerLogic(UserContext userContext, int portNumber){
         this.userContext = userContext;
         clientThreads = new ArrayList<>();
         serverThread = new ServerThread(this);
         clientSockets = new HashMap<>();
+        messagesForClient = new HashMap<>();
+
+        this.portNumber = portNumber;
     }
 
     public void start(){
@@ -39,10 +48,10 @@ public class ServerLogic {
     }
 
     public int getPort() {
-        return 15000;       // TODO
+        return portNumber;
     }
 
-    public JsonMessage RegResponse(String login, String pass1, String pass2){
+    public JsonMessage regResponse(String login, String pass1, String pass2){
         if(isLoginUnique(login)){
             if(pass1.equals(pass2)) {
                 addNewUser(login, pass1);
@@ -63,7 +72,7 @@ public class ServerLogic {
         userContext.addUser(login, pass1);
     }
 
-    public JsonMessage LoginResponse(Socket socket, String login, String pass){
+    public JsonMessage loginResponse(Socket socket, String login, String pass){
         if(isLoginAndPasswordCorrect(login, pass)){
             clientSockets.put(login, socket);
             System.out.println(String.format("Login: %s, Socket: %s", login, socket.toString()));
@@ -77,17 +86,17 @@ public class ServerLogic {
         return userContext.isPasswordCorrect(login, pass);
     }
 
-    public JsonMessage TextResponse(Socket socket, JsonMessage message){
+    public JsonMessage textResponse(Socket socket, JsonMessage message){
         if(isSocketAuthorized(socket, message.getP1())){
             if(isUserLoggedIn(message.getP2())){
-                sendMessage(message);
+                stackMessage(message);
                 return new JsonMessage(MessageType.TEXT, new String("true"), new String("Succeeded."));
             }
             else{
                 return new JsonMessage(MessageType.TEXT, new String("false"), new String("Recipient is not logged."));
             }
         } else{
-            return new JsonMessage(MessageType.TEXT, new String("false"), new String("You are not correctly logged in."));
+            return socketUnathorized();
         }
     }
 
@@ -97,17 +106,93 @@ public class ServerLogic {
         }
         return false;
     }
+    private JsonMessage socketUnathorized(){
+        return new JsonMessage(MessageType.TEXT, new String("false"), new String("You are not correctly logged in."));
+    }
 
     private boolean isUserLoggedIn(String login){
         return clientSockets.containsKey(login);
     }
 
-    private void sendMessage(JsonMessage message){
-        Socket socket = clientSockets.get(message.getP2());
-        try (ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream())){
-            output.writeObject(message.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
+    private void stackMessage(JsonMessage message){
+        String recipient = message.getP2();
+        if(messagesForClient.containsKey(recipient)){
+            messagesForClient.get(recipient).add(message);
+        }else{
+            List<JsonMessage> messages = new ArrayList<>();
+            messages.add(message);
+            messagesForClient.put(recipient, messages);
+        }
+    }
+
+    public JsonMessage loadResponse(Socket socket, String login){
+        if(isSocketAuthorized(socket, login)) {
+            if (messagesForClient.containsKey(login)) {
+                return JsonMessageFactory.createLoadMsg(MessageType.LOAD, this.messagesForClient.get(login));
+            } else {
+                return new JsonMessage(MessageType.LOAD, new String("[]"));
+            }
+        }else{
+            return socketUnathorized();
+        }
+    }
+
+    public JsonMessage listResponse(Socket socket, String login, boolean active){
+        if(isSocketAuthorized(socket, login)) {
+            if (active) {
+                List<String> keys = new ArrayList<>(clientSockets.keySet());
+                return JsonMessageFactory.createListMsg(MessageType.LIST, keys);
+            } else {
+                return JsonMessageFactory.createListMsg(MessageType.LIST, userContext.getAllUserLogins());
+            }
+        }else{
+            return socketUnathorized();
+        }
+    }
+
+    public JsonMessage findResponse(Socket socket, String login, String regex, boolean active){
+        if(isSocketAuthorized(socket, login)) {
+            if (active) {
+                List<String> keys = new ArrayList<>(clientSockets.keySet());
+                List<String> filtered = new ArrayList<>();
+                for(String s : keys){
+                    if (Pattern.matches(regex, s)){
+                        filtered.add(s);
+                    }
+                }
+                return JsonMessageFactory.createListMsg(MessageType.FIND, filtered);
+            } else {
+                return JsonMessageFactory.createListMsg(MessageType.FIND, userContext.getAllUserLogins(regex));
+            }
+        }else{
+            return socketUnathorized();
+        }
+    }
+
+    public JsonMessage logoutResponse(Socket socket, String login){
+        if(isSocketAuthorized(socket, login)) {
+            if (clientSockets.keySet().contains(login)) {
+                clientSockets.remove(login);
+                return new JsonMessage(MessageType.LOGOUT, new String("true"));
+            }else{
+                return new JsonMessage(MessageType.LOGOUT, new String("false"), new String("User isn't logged."));
+            }
+        }else{
+            return socketUnathorized();
+        }
+    }
+
+    public void finishConnection(Socket socket) {
+        List<String> keys = new ArrayList<>();
+        for (Map.Entry<String, Socket> entry : clientSockets.entrySet()) {
+            if (socket.equals(entry.getValue())){
+                keys.add(entry.getKey());
+            }
+        }
+        for(String key : keys){
+            if(clientSockets.containsKey(key)){
+                clientSockets.remove(key);
+            }
         }
     }
 

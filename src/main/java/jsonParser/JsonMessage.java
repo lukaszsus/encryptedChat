@@ -37,10 +37,10 @@ public class JsonMessage {
 
     public JsonMessage(String message){
         JSONObject obj = new JSONObject(message);
-        this.p0 = obj.getString("P0");
-        this.p1 = obj.getString("P1");
-        this.p2 = obj.getString("P2");
-        this.p3 = obj.getString("P3");
+        this.p0 = obj.has("P0") ? obj.getString("P0") : null;
+        this.p1 = obj.has("P1") ? obj.getString("P1") : null;
+        this.p2 = obj.has("P2") ? obj.getString("P2") : null;
+        this.p3 = obj.has("P3") ? obj.getString("P3") : null;
         setMessageType();
     }
 
@@ -77,28 +77,36 @@ public class JsonMessage {
     }
 
     public JsonMessage doAction(ServerLogic serverLogic, Socket socket) {
-        switch(msgType){
+        switch(msgType) {
             case REG:
-                return serverLogic.RegResponse(p1,p2,p3);
+                return serverLogic.regResponse(p1, p2, p3);
             case LOGIN:
-                return serverLogic.LoginResponse(socket, p1, p2);
+                return serverLogic.loginResponse(socket, p1, p2);
             case TEXT:
-                return serverLogic.TextResponse(socket, this);
+                return serverLogic.textResponse(socket, this);
             case LIST:
-                break;
+                return serverLogic.listResponse(socket, p1, p2.equals("true") || p2.equals("t") || p2.equals("1"));
             case FIND:
-                break;
+                return serverLogic.findResponse(socket, p1, p2, p3.equals("true") || p3.equals("t") || p3.equals("1"));
             case LOGOUT:
-                break;
-            case PONG:
-                break;
-            case PING:
-                break;
+                return serverLogic.loadResponse(socket, p1);
+            case LOAD:
+                return serverLogic.loadResponse(socket, p1);
             default:
                 System.out.println("Message type is unknown.");
-                break;
+                return new JsonMessage(MessageType.UNKNOWN, null, null, null);
         }
-        return new JsonMessage(MessageType.UNKNOWN, null, null, null);
+    }
+
+    public JSONObject toJsonObject(){
+        JSONObject obj = new JSONObject();
+
+        obj.put("P0", p0);
+        obj.put("P1", p1);
+        obj.put("P2", p2);
+        obj.put("P3", p3);
+
+        return obj;
     }
 
     public String toString(){
@@ -132,6 +140,9 @@ public class JsonMessage {
                 break;
             case "LOGOUT":
                 msgType = LOGIN;
+                break;
+            case "LOAD":
+                msgType = LOAD;
                 break;
             case "PONG":
                 msgType = PONG;
