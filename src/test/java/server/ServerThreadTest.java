@@ -1,5 +1,6 @@
 package server;
 
+import db.UserContext;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -13,7 +14,7 @@ class ServerThreadTest {
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
-        serverLogic = new ServerLogic();
+        serverLogic = new ServerLogic(new UserContext());
         serverThread = new ServerThread(serverLogic);
     }
 

@@ -53,7 +53,7 @@ public class ServerThread extends Thread {
             try {
                 socket = serverSocket.accept();
                 if (socket != null) {
-                    System.out.println("Client socket created.");
+                    System.out.println(String.format("Client socket created: %s.", socket.toString()));
                     ClientThread ct = new ClientThread(socket, serverLogic);
                     ct.start();
                     serverLogic.getClientThreads().add(ct);

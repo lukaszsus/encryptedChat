@@ -29,10 +29,21 @@ public class ClientSocket {
 
     public void sendMessage(String message) {
         try {
-            output.writeObject(message);
+            output.writeObject(message.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public String receiveMessage(){
+        try {
+            return input.readObject().toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return new String();
     }
 
 /*    private byte[] castSoapMessageToByteArray(SOAPMessage message) throws IOException, SOAPException {

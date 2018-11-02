@@ -1,36 +1,36 @@
 Klient:
 1. Przynajmniej jeden serwer, przynajmniej 2 komunikatory.
-2. Ta sama metoda szyfrowania. W�asna implementacja algorytmu szyfrowania.
+2. Ta sama metoda szyfrowania. W³asna implementacja algorytmu szyfrowania.
 Serwer:
 3. Metoda rejestracji. Przechowywane na serwerze zahsowane klucze i loginy.
 System logowania, ale bez historii konwersacji.
 4. Wyszukiwanie kontaktu.
 
-Protoko�y xmpp, sip, simple.
+Protoko³y xmpp, sip, simple.
 
 1. Serwer
 2. Gniazda TCP
-3. W�asny protok�
+3. W³asny protokó³
 4. Szyfrowanie:
-a) s�ownik, np. A to 3, B to 17;
+a) s³ownik, np. A to 3, B to 17;
 b) szyfr cezara z hashem
 c) szyfr przestawieniowy (macierzowy)
 
-2. Protok�:
+2. Protokół:
 K-S
 P0	P1	P2	P3
 REG	login	pass	pass
-LOGIN	login	pass	-
-MSG	login	
+LOGIN	login	pass
+TEXT	login	recip	content
 LIST	login
 FIND	login	fraza
 LOGOUT	login
-PONG
+PONG	login
 
 S-K
 P0	P1	P2	P3
-REG	t/f	MSG
-LOGIN	t/f	MSG
+REG	t/f	content
+LOGIN	t/f	content
 LIST	List<User>
 FIND	List<User>
 LOGOUT	t/f
@@ -40,6 +40,6 @@ PING	login
 1. Cezar kluczem (szyfr Viegenera)
 2. XOR z tym samym kluczem co w pkt 1.
 3. Transpozycja macierzy
-4. Klucz do szyfrowania wiadomo�ci:
-literka po literce (zaczynaj�c od pierwszego alfabetycznie) z login�w.
+4. Klucz do szyfrowania wiadomoci:
+literka po literce (zaczynaj¹c od pierwszego alfabetycznie) z loginów.
 Potem md5 z tego.
