@@ -20,7 +20,7 @@ class ServerLogicTest {
     static void setUp() {
         UserContext userContext = new UserContext("chat.db");
         userContext.removeAllUsers();
-        serverLogic = new ServerLogic(userContext, ServerLogic.SERVER_PORT);
+        serverLogic = new ServerLogic(userContext, 15000);
         serverLogic.start();
         try {
             Thread.sleep(1000);
@@ -28,8 +28,8 @@ class ServerLogicTest {
             e.printStackTrace();
         }
 
-        cs1 = new ClientSocket(ServerLogic.SERVER_PORT);
-        cs2 = new ClientSocket(ServerLogic.SERVER_PORT);
+        cs1 = new ClientSocket(15000);
+        cs2 = new ClientSocket(15000);
     }
 
     @ParameterizedTest
@@ -48,24 +48,24 @@ class ServerLogicTest {
 
     @ParameterizedTest
     @MethodSource("parametersForTestTextCommunication")
-    void testTextCommunication(String inputMsg1, String inputMsg2, String outputMsg1, String outputMsg2) {
-        cs1.sendMessage(inputMsg1);
+    void testTextCommunication(String inputMsg, String outputMsg) {
+        cs1.sendMessage(inputMsg);
         String str1 = cs1.receiveMessage();
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        cs2.sendMessage(inputMsg2);
+        //cs2.sendMessage(inputMsg2);
         String str2 = cs2.receiveMessage();
 
-        outputMsg1 = outputMsg1.replace(" ", "").replace("\n", "");
-        outputMsg2 = outputMsg2.replace(" ", "").replace("\n", "");
+        inputMsg = inputMsg.replace(" ", "").replace("\n", "");
+        outputMsg = outputMsg.replace(" ", "").replace("\n", "");
         str1 = str1.replace(" ", "").replace("\n", "");
         str2 = str2.replace(" ", "").replace("\n", "");
 
-        assertEquals(outputMsg1, str1);
-        assertEquals(outputMsg2, str2);
+        assertEquals(outputMsg, str1);
+        assertEquals(inputMsg, str2);
     }
 
     private static Stream<String[]> parametersForTestCommunication() {
@@ -205,19 +205,11 @@ class ServerLogicTest {
                 "   \"P2\":\"user2\",\n" +
                 "   \"P3\":\"content1\"\n" +
                 "}"),
-                new String("{  \n" +
-                        "   \"P0\":\"LOAD\",\n" +
-                        "   \"P1\":\"user2\"\n" +
-                        "}"),
-                new String("{  \n" +
-                        "   \"P0\":\"TEXT\",\n" +
-                        "   \"P1\":\"true\",\n" +
-                        "   \"P2\":\"Succeeded.\"\n" +
-                        "}"),
                         new String("{  \n" +
-                                "   \"P0\":\"LOAD\",\n" +
-                                "   \"P1\":\"[{\\\"P0\\\":\\\"TEXT\\\",\\\"P1\\\":\\\"user1\\\",\\\"P2\\\":\\\"user2\\\",\\\"P3\\\":\\\"content1\\\"}]\"" +
-                                "}"),},
+                                "   \"P0\":\"TEXT\",\n" +
+                                "   \"P1\":\"true\",\n" +
+                                "   \"P2\":\"Succeeded.\"\n" +
+                                "}")},
                 new String[]{
                         new String("{  \n" +
                                 "   \"P0\":\"TEXT\",\n" +
@@ -226,15 +218,10 @@ class ServerLogicTest {
                                 "   \"P3\":\"content2\"\n" +
                                 "}"),
                         new String("{  \n" +
-                                "   \"P0\":\"LOAD\",\n" +
-                                "   \"P1\":\"user3\"\n" +
-                                "}"),
-                        new String("{  \n" +
                                 "   \"P0\":\"TEXT\",\n" +
                                 "   \"P1\":\"true\",\n" +
                                 "   \"P2\":\"Succeeded.\"\n" +
-                                "}"),
-                new String("{\"P0\":\"TEXT\",\"P1\":\"false\",\"P2\":\"You are not correctly logged in.\"}")}
+                                "}")}
                         );
     }
 }

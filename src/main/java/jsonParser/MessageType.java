@@ -8,7 +8,7 @@ public enum MessageType {
     LIST("LIST"),
     FIND("FIND"),
     LOGOUT("LOGOUT"),
-    LOAD("LOAD"),
+/*    LOAD("LOAD"),*/
     PONG("PONG"),
     PING("PING");
 

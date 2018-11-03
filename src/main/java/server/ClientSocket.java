@@ -1,5 +1,6 @@
 package server;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -8,12 +9,14 @@ import java.net.Socket;
 
 public class ClientSocket {
 
+    private int port;
     private String host;
     private Socket socket;
     private ObjectInputStream input;
     private ObjectOutputStream output;
 
     public ClientSocket(int port) {
+        this.port = port;
         try {
             host = InetAddress.getLocalHost().getHostName();
             socket = new Socket(host, port);

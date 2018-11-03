@@ -25,7 +25,7 @@ TEXT	login	recip	content
 LIST	login	true/false
 FIND	login	fraza	true/false	
 LOGOUT	login
-LOAD	login
+PONG	login
 
 S-K
 P0	P1	P2	P3
@@ -34,7 +34,7 @@ LOGIN	t/f	content
 LIST	List<String>
 FIND	List<String>
 LOGOUT	t/f
-LOAD	List<>
+PING	login
 
 3. Szyfrowanie:
 1. Cezar kluczem (szyfr Viegenera)

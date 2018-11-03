@@ -89,9 +89,11 @@ public class JsonMessage {
             case FIND:
                 return serverLogic.findResponse(socket, p1, p2, p3.equals("true") || p3.equals("t") || p3.equals("1"));
             case LOGOUT:
-                return serverLogic.loadResponse(socket, p1);
-            case LOAD:
-                return serverLogic.loadResponse(socket, p1);
+                return serverLogic.logoutResponse(socket, p1);
+/*            case LOAD:
+                return serverLogic.loadResponse(socket, p1);*/
+            case PONG:
+                return serverLogic.pongResponse(socket, p1);
             default:
                 System.out.println("Message type is unknown.");
                 return new JsonMessage(MessageType.UNKNOWN, null, null, null);
@@ -141,9 +143,9 @@ public class JsonMessage {
             case "LOGOUT":
                 msgType = LOGIN;
                 break;
-            case "LOAD":
+/*            case "LOAD":
                 msgType = LOAD;
-                break;
+                break;*/
             case "PONG":
                 msgType = PONG;
                 break;

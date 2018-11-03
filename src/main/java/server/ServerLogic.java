@@ -9,7 +9,6 @@ import netscape.javascript.JSObject;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.*;
@@ -18,28 +17,28 @@ import java.util.regex.Pattern;
 
 public class ServerLogic {
 
-    public static final int SERVER_PORT = 15001;
-
     private UserContext userContext;
     private ServerThread serverThread;
+    private ConnectionRefresher connRefresher;
     private List<ClientThread> clientThreads;
     private Map<String, Socket> clientSockets;
     private Map<String, List<JsonMessage>> messagesForClient;
-
     private int portNumber;
 
     public ServerLogic(UserContext userContext, int portNumber){
-        this.portNumber = portNumber;
-
         this.userContext = userContext;
         clientThreads = new ArrayList<>();
         serverThread = new ServerThread(this);
+        connRefresher = new ConnectionRefresher(this);
         clientSockets = new HashMap<>();
         messagesForClient = new HashMap<>();
+
+        this.portNumber = portNumber;
     }
 
     public void start(){
         serverThread.start();
+        connRefresher.start();
     }
 
     public List<ClientThread> getClientThreads() {
@@ -92,8 +91,8 @@ public class ServerLogic {
     public JsonMessage textResponse(Socket socket, JsonMessage message){
         if(isSocketAuthorized(socket, message.getP1())){
             if(isUserLoggedIn(message.getP2())){
-                stackMessage(message);
-                //sendMessage(message);
+                //stackMessage(message);
+                sendMessage(message);
                 return new JsonMessage(MessageType.TEXT, new String("true"), new String("Succeeded."));
             }
             else{
@@ -110,7 +109,6 @@ public class ServerLogic {
         }
         return false;
     }
-
     private JsonMessage socketUnathorized(){
         return new JsonMessage(MessageType.TEXT, new String("false"), new String("You are not correctly logged in."));
     }
@@ -119,14 +117,29 @@ public class ServerLogic {
         return clientSockets.containsKey(login);
     }
 
-    private void sendMessage(JsonMessage message){
+    public boolean sendMessage(JsonMessage message){
         String recipient = message.getP2();
         Socket socket = clientSockets.get(recipient);
-        try (ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream())) {
-            output.writeObject(message.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
+        ObjectOutputStream outputStream = findOutput(socket);
+        if(outputStream != null) {
+            try {
+                outputStream.writeObject(message.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }else{
+            return false;
         }
+    }
+
+    private ObjectOutputStream findOutput(Socket socket){
+        for(ClientThread ct : clientThreads){
+            if(ct.getSocket().equals(socket)){
+                return ct.getOutput();
+            }
+        }
+        return null;
     }
 
     private void stackMessage(JsonMessage message){
@@ -140,23 +153,17 @@ public class ServerLogic {
         }
     }
 
-    public List<JsonMessage> getMessagesForClient(String login){
-        return this.messagesForClient.get(login);
-    }
-
-    public JsonMessage loadResponse(Socket socket, String login){
+/*    public JsonMessage loadResponse(Socket socket, String login){
         if(isSocketAuthorized(socket, login)) {
             if (messagesForClient.containsKey(login)) {
-                JsonMessage retMsg =  JsonMessageFactory.createLoadMsg(MessageType.LOAD, this.messagesForClient.get(login));
-                messagesForClient.remove(login);
-                return retMsg;
+                return JsonMessageFactory.createLoadMsg(MessageType.LOAD, this.messagesForClient.get(login));
             } else {
                 return new JsonMessage(MessageType.LOAD, new String("[]"));
             }
         }else{
             return socketUnathorized();
         }
-    }
+    }*/
 
     public JsonMessage listResponse(Socket socket, String login, boolean active){
         if(isSocketAuthorized(socket, login)) {
@@ -203,6 +210,15 @@ public class ServerLogic {
         }
     }
 
+    public JsonMessage pongResponse(Socket socket, String login){
+        if(isSocketAuthorized(socket, login)){
+            connRefresher.refreshActiveValue(login);
+            return new JsonMessage(MessageType.PONG, new String("true"));
+        } else{
+            return socketUnathorized();
+        }
+    }
+
     public void finishConnection(Socket socket) {
         List<String> keys = new ArrayList<>();
         for (Map.Entry<String, Socket> entry : clientSockets.entrySet()) {
@@ -215,6 +231,28 @@ public class ServerLogic {
                 clientSockets.remove(key);
             }
         }
+    }
+
+    public void remove(String login){
+        Socket socket = clientSockets.get(login);
+        List<ClientThread> toRemove = new ArrayList<>();
+        for(ClientThread ct : clientThreads){
+            if(ct.getSocket().equals(socket)) {
+                toRemove.add(ct);
+            }
+        }
+        for(ClientThread ct : toRemove){
+            clientThreads.remove(ct);
+        }
+        clientSockets.remove(login);
+    }
+
+    public void close(){
+        for(ClientThread ct : clientThreads){
+            ct.setWork(false);
+        }
+        connRefresher.setWork(false);
+        serverThread.setWork(false);
     }
 
     protected void finalize(){

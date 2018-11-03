@@ -64,17 +64,16 @@ public class ServerThread extends Thread {
         }
 
         try {
-            serverSocket.close();
-        } catch (IOException e) {
-
-        }
-        try {
             output.close();
         } catch (IOException e) {
-
         }
         try {
             input.close();
+        } catch (IOException e) {
+
+        }
+        try {
+            serverSocket.close();
         } catch (IOException e) {
 
         }

@@ -23,7 +23,7 @@ public final class JsonMessageFactory {
         }
     }*/
 
-    public static JsonMessage createLoadMsg(MessageType msgType, List<JsonMessage> list) {
+/*    public static JsonMessage createLoadMsg(MessageType msgType, List<JsonMessage> list) {
         JSONObject jObject = new JSONObject();
         JSONArray jArray = new JSONArray();
         try
@@ -36,7 +36,7 @@ public final class JsonMessageFactory {
         } catch (JSONException jse) {
         }
         return new JsonMessage(msgType, jArray.toString());
-    }
+    }*/
 
     public static JsonMessage createListMsg(MessageType msgType, List<String> list){
         JSONObject jObject = new JSONObject();
@@ -51,5 +51,9 @@ public final class JsonMessageFactory {
         } catch (JSONException jse) {
         }
         return new JsonMessage(msgType, jArray.toString());
+    }
+
+    public static JsonMessage createPing(String login){
+        return new JsonMessage(MessageType.PING, login);
     }
 }
