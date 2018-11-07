@@ -141,7 +141,7 @@ public class JsonMessage {
                 msgType = FIND;
                 break;
             case "LOGOUT":
-                msgType = LOGIN;
+                msgType = LOGOUT;
                 break;
 /*            case "LOAD":
                 msgType = LOAD;

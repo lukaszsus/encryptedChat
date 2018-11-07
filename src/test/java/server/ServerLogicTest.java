@@ -194,6 +194,18 @@ class ServerLogicTest {
                         new String("{  \n" +
                                 "   \"P0\":\"FIND\",\n" +
                                 "   \"P1\":\"[\\\"user1\\\"]\"\n" +
+                                "}")},
+
+                new String[]{"cs1",
+                        new String("{  \n" +
+                                "   \"P0\":\"LOGOUT\",\n" +
+                                "   \"P1\":\"user1\",\n" +
+                                "   \"P2\":\"\",\n" +
+                                "   \"P3\":\"\"\n" +
+                                "}"),
+                        new String("{  \n" +
+                                "   \"P0\":\"LOGOUT\",\n" +
+                                "   \"P1\":\"true\"\n" +
                                 "}")}
         );
     }

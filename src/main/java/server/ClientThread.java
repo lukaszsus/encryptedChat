@@ -1,5 +1,7 @@
 package server;
 
+import app.CipherChatApp;
+import cipher.Encoder;
 import jsonParser.JsonMessage;
 import jsonParser.MessageType;
 
@@ -10,16 +12,20 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class ClientThread extends Thread {
+    public static final boolean ENCRYPT = true;
+
     private Socket socket;
     private ObjectOutputStream output;
     private ObjectInputStream input;
     private boolean work;
+    private Encoder encoder;
 
     private ServerLogic serverLogic;
 
     public ClientThread(Socket socket, ServerLogic serverLogic) {
         this.socket = socket;
         this.serverLogic = serverLogic;
+        this.encoder = new Encoder();
     }
 
     public Socket getSocket() {
@@ -63,12 +69,22 @@ public class ClientThread extends Thread {
 
             while (work) {
                 String message = (String) input.readObject();
-                System.out.println(message);
+                if(ENCRYPT) {
+                    message = encoder.decode(message);
+                } else {
+                    System.out.println(message);
+                }
+
                 JsonMessage jsonMessage = new JsonMessage(message);
                 jsonMessage = jsonMessage.doAction(serverLogic, socket);
                 if(jsonMessage.getMsgType()!= MessageType.PONG) {
-                    System.out.println(jsonMessage.toString());
-                    output.writeObject(jsonMessage.toString());
+                    //System.out.println(jsonMessage.toString());
+                    if(ENCRYPT) {
+                        message = encoder.encode(jsonMessage.toString());
+                    }else{
+                        message = jsonMessage.toString();
+                    }
+                    output.writeObject(message);
                 }
             }
         } catch (IOException e) {
