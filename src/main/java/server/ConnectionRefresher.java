@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Łukasz Sus
+ */
 public class ConnectionRefresher extends Thread {
 
     private static final int FRESH_VALUE = 5;

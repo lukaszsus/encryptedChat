@@ -4,7 +4,6 @@ package cipher;
  * Autor: Łukasz Sus 226015
  * Data: 17.10.2018
  */
-
 public class Encoder {
 
     public static final String DEFAULT_KEY = "046c73498a53cbb732248168a3ced0ad";
@@ -85,9 +84,6 @@ public class Encoder {
         text = xorEncode(text);
         text = caesarDecode(text);
         return text;
-    }
-
-    public static void main(String args[]) {
     }
 
     private int getBitAt(char c, int index){

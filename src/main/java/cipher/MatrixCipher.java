@@ -1,5 +1,8 @@
 package cipher;
 
+/**
+ * @author Sebastian Korniewicz
+ */
 public class MatrixCipher {
     public static String Encrypt(String text) {
         StringBuilder stringBuilder = new StringBuilder();

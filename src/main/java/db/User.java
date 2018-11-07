@@ -1,5 +1,8 @@
 package db;
 
+/**
+ * @author Łukasz Sus
+ */
 public class User {
     private String login;
     private String password;

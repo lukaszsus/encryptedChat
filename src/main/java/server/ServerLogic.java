@@ -11,6 +11,9 @@ import java.net.Socket;
 import java.util.*;
 import java.util.regex.Pattern;
 
+/**
+ * @author Łukasz Sus
+ */
 public class ServerLogic {
 
     private UserContext userContext;
@@ -174,19 +177,20 @@ public class ServerLogic {
         }
     }
 
-    public JsonMessage findResponse(Socket socket, String login, String regex, boolean active){
+    public JsonMessage findResponse(Socket socket, String login, String phrase, boolean active){
         if(isSocketAuthorized(socket, login)) {
             if (active) {
                 List<String> keys = new ArrayList<>(clientSockets.keySet());
                 List<String> filtered = new ArrayList<>();
+                phrase = new String(".*").concat(phrase).concat(new String(".*"));
                 for(String s : keys){
-                    if (Pattern.matches(regex, s)){
+                    if (Pattern.matches(phrase, s)){
                         filtered.add(s);
                     }
                 }
                 return JsonMessageFactory.createListMsg(MessageType.FIND, filtered);
             } else {
-                return JsonMessageFactory.createListMsg(MessageType.FIND, userContext.getAllUserLogins(regex));
+                return JsonMessageFactory.createListMsg(MessageType.FIND, userContext.getAllUserLogins(phrase));
             }
         }else{
             return socketUnathorized();

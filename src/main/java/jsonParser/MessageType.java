@@ -1,5 +1,8 @@
 package jsonParser;
 
+/**
+ * @author Łukasz Sus
+ */
 public enum MessageType {
     UNKNOWN("UNKNOWN"),
     REG("REG"),

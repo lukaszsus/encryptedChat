@@ -176,13 +176,25 @@ class ServerLogicTest {
                 new String("{  \n" +
                         "   \"P0\":\"FIND\",\n" +
                         "   \"P1\":\"user2\",\n" +
-                        "   \"P2\":\"us.*\",\n" +
+                        "   \"P2\":\"us\",\n" +
                         "   \"P3\":\"true\"\n" +
                         "}"),
                 new String("{  \n" +
                         "   \"P0\":\"FIND\",\n" +
                         "   \"P1\":\"[\\\"user1\\\", \\\"user2\\\"]\"\n" +
                         "}")},
+
+                new String[]{"cs2",
+                        new String("{  \n" +
+                                "   \"P0\":\"FIND\",\n" +
+                                "   \"P1\":\"user2\",\n" +
+                                "   \"P2\":\"us\",\n" +
+                                "   \"P3\":\"false\"\n" +
+                                "}"),
+                        new String("{  \n" +
+                                "   \"P0\":\"FIND\",\n" +
+                                "   \"P1\":\"[\\\"user1\\\", \\\"user2\\\"]\"\n" +
+                                "}")},
 
               new String[]{"cs2",
                         new String("{  \n" +
@@ -206,12 +218,26 @@ class ServerLogicTest {
                         new String("{  \n" +
                                 "   \"P0\":\"LOGOUT\",\n" +
                                 "   \"P1\":\"true\"\n" +
+                                "}")},
+
+                new String[]{"cs1",
+                        new String("{  \n" +
+                                "   \"P0\":\"LOGIN\",\n" +
+                                "   \"P1\":\"user1\",\n" +
+                                "   \"P2\":\"pass\",\n" +
+                                "   \"P3\":\"\"\n" +
+                                "}"),
+                        new String("{  \n" +
+                                "   \"P0\":\"LOGIN\",\n" +
+                                "   \"P1\":\"true\",\n" +
+                                "   \"P2\":\"Login succeeded.\"\n" +
                                 "}")}
         );
     }
 
     private static Stream<String[]> parametersForTestTextCommunication() {
-        return Stream.of(new String[]{new String("{  \n" +
+        return Stream.of(
+                new String[]{new String("{  \n" +
                 "   \"P0\":\"TEXT\",\n" +
                 "   \"P1\":\"user1\",\n" +
                 "   \"P2\":\"user2\",\n" +

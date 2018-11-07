@@ -7,6 +7,9 @@ import java.net.Socket;
 
 import static jsonParser.MessageType.*;
 
+/**
+ * @author Łukasz Sus
+ */
 public class JsonMessage {
 
     MessageType msgType = UNKNOWN;

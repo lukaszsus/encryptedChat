@@ -7,6 +7,9 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
+/**
+ * @author Łukasz Sus
+ */
 public class ClientSocket {
 
     private int port;

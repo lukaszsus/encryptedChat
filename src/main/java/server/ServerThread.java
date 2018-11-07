@@ -8,6 +8,9 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * @author Łukasz Sus
+ */
 public class ServerThread extends Thread {
     private String host;
     private ServerSocket serverSocket;

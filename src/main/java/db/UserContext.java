@@ -4,6 +4,9 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Łukasz Sus
+ */
 public class UserContext {
 
     // JDBC driver name and database URL
@@ -100,12 +103,13 @@ public class UserContext {
         return logins;
     }
 
-    public List<String> getAllUserLogins(String regex){
+    public List<String> getAllUserLogins(String phrase){
         List<String> logins = new ArrayList<>();
         try (Connection connection = DriverManager.getConnection(dbUrl))
         {
-            PreparedStatement stmt = connection.prepareStatement("SELECT Login FROM Users WHERE Login REGEXP '?';");
-            stmt.setString(1, regex);
+            phrase = new String("%").concat(phrase).concat(new String("%"));
+            PreparedStatement stmt = connection.prepareStatement("SELECT Login FROM Users WHERE Login LIKE ?;");
+            stmt.setString(1, phrase);
             ResultSet rs = stmt.executeQuery();
 
             while(rs.next())

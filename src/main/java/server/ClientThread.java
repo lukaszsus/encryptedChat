@@ -11,6 +11,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+/**
+ * @author Łukasz Sus
+ */
 public class ClientThread extends Thread {
     public static final boolean ENCRYPT = true;
 
@@ -78,11 +81,11 @@ public class ClientThread extends Thread {
                 JsonMessage jsonMessage = new JsonMessage(message);
                 jsonMessage = jsonMessage.doAction(serverLogic, socket);
                 if(jsonMessage.getMsgType()!= MessageType.PONG) {
-                    //System.out.println(jsonMessage.toString());
+                    message = jsonMessage.toString();
                     if(ENCRYPT) {
-                        message = encoder.encode(jsonMessage.toString());
+                        message = encoder.encode(message);
                     }else{
-                        message = jsonMessage.toString();
+                        System.out.println(jsonMessage.toString());
                     }
                     output.writeObject(message);
                 }

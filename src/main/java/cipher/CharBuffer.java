@@ -1,5 +1,8 @@
 package cipher;
 
+/**
+ * @author Łukasz Sus
+ */
 public class CharBuffer {
     private static final int BYTE = 8;
     private int codeSize;

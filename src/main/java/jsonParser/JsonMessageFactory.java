@@ -6,6 +6,9 @@ import org.json.JSONObject;
 
 import java.util.List;
 
+/**
+ * @author Łukasz Sus
+ */
 public final class JsonMessageFactory {
 
     /**
