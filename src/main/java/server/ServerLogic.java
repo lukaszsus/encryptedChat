@@ -1,5 +1,6 @@
 package server;
 
+import cipher.Encoder;
 import db.UserContext;
 import jsonParser.JsonMessage;
 import jsonParser.JsonMessageFactory;
@@ -16,6 +17,8 @@ import java.util.regex.Pattern;
  */
 public class ServerLogic {
 
+    public static final boolean ENCRYPT = true;
+
     private UserContext userContext;
     private ServerThread serverThread;
     private ConnectionRefresher connRefresher;
@@ -23,6 +26,7 @@ public class ServerLogic {
     private Map<String, Socket> clientSockets;
     private Map<String, List<JsonMessage>> messagesForClient;
     private int portNumber;
+    private Encoder encoder;
 
     public ServerLogic(UserContext userContext, int portNumber){
         this.userContext = userContext;
@@ -33,11 +37,20 @@ public class ServerLogic {
         messagesForClient = new HashMap<>();
 
         this.portNumber = portNumber;
+        encoder = new Encoder();
     }
 
     public void start(){
         serverThread.start();
         connRefresher.start();
+    }
+
+    public Encoder getEncoder() {
+        return encoder;
+    }
+
+    public void setEncoder(Encoder encoder) {
+        this.encoder = encoder;
     }
 
     public List<ClientThread> getClientThreads() {
@@ -122,7 +135,13 @@ public class ServerLogic {
         ObjectOutputStream outputStream = findOutput(socket);
         if(outputStream != null) {
             try {
-                outputStream.writeObject(message.toString());
+                if(ENCRYPT) {
+                    String strMessage = encoder.encode(message.toString());
+                    outputStream.writeObject(strMessage);
+                }
+                else {
+                    outputStream.writeObject(message.toString());
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

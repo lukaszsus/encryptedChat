@@ -11,11 +11,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import static server.ServerLogic.ENCRYPT;
+
 /**
  * @author Łukasz Sus
  */
 public class ClientThread extends Thread {
-    public static final boolean ENCRYPT = true;
 
     private Socket socket;
     private ObjectOutputStream output;
@@ -28,7 +29,7 @@ public class ClientThread extends Thread {
     public ClientThread(Socket socket, ServerLogic serverLogic) {
         this.socket = socket;
         this.serverLogic = serverLogic;
-        this.encoder = new Encoder();
+        this.encoder = serverLogic.getEncoder();
     }
 
     public Socket getSocket() {
